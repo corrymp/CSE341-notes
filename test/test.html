@@ -146,7 +146,7 @@
             out.textContent += '\n' + (msg ?? '') + parsed;
         };
 
-        const url = type => `${baseUrl}${type ?? ''}`;
+        const url = type => `${baseUrl}/${type ?? ''}`;
         const idUrl = (type, subtype) => url(type) + (subtype ? `/${subtype}/` : '/') + _id.value;
 
         const request = (method, ...params) => ({
