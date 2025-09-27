@@ -23,7 +23,6 @@ async function createNote(req, res) {
             createdBy: validateId(res.locals.userData._id),
             createdAt: Date.now()
         });
-        console.log('createNote', error, result);
 
         if (error) throw error;
 
@@ -41,7 +40,6 @@ async function getNoteById(req, res) {
 
     try {
         const { error, result } = await model.getNoteById(id);
-        console.log('getNoteById', error, result);
         if (error) throw error;
         if (!result) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.OK).json($pass(result));
@@ -58,7 +56,6 @@ async function getAllByUser(req, res) {
 
     try {
         const { error, result } = await model.getAllNotesByUserId(id);
-        console.log('getAllByUser(note)', error, result);
         if (error) throw error;
         if (!result) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.OK).json($pass(result));
@@ -72,7 +69,6 @@ async function getAll(req, res) {
 
     try {
         const { error, result } = await model.getAllNotes();
-        console.log('getAll(note)', error, result);
         if (error) throw error;
         res.status(StatusCodes.OK).json($pass_count(result, result.length));
     } catch (e) {
@@ -104,8 +100,7 @@ async function updateNote(req, res) {
     const createdAt = newData.createdAt ?? oldData.createdAt;
 
     try {
-        const { error, result } = await model.updateNote(id, { title, content, createdBy, createdAt, edited: Date.now() });
-        console.log('updateNote', error, result);
+        const { error } = await model.updateNote(id, { title, content, createdBy, createdAt, edited: Date.now() });
         if (error) throw error;
         res.status(StatusCodes.NoContent).json();
     } catch (e) {
@@ -122,7 +117,6 @@ async function addNoteToCategory(req, res) {
 
     try {
         const { error, note, category, success } = await model.addNoteToCategory(noteId, categoryId);
-        console.log('addNoteToCategory', error, note, category, success);
         if (error) throw error;
         if (!note && !category) return res.status(StatusCodes.NotFound).json($fail('no note or category found with ids'));
         if (!note) return res.status(StatusCodes.NotFound).json($fail('no note found with id'));
@@ -143,7 +137,6 @@ async function deleteNote(req, res) {
 
     try {
         const { error, result } = await model.deleteNote(id);
-        console.log('deleteNote', error, result);
         if (error) throw error;
         if (result.deletedCount === 0) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.NoContent).json();

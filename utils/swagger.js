@@ -52,7 +52,7 @@ async function run() {
                 { name: 'account', description: 'endpoints for account management and authentication' },
                 { name: 'users', description: 'endpoints for user management' },
                 { name: 'notes', description: 'endpoints for note management' },
-                { name: 'categories', description: 'endpoints for category management' },
+                { name: 'categories', description: 'endpoints for category management' }
             ],
             schemes,
             securityDefinitions: {

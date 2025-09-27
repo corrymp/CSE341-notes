@@ -23,7 +23,6 @@ async function createCategory(req, res) {
             createdBy: validateId(res.locals.userData._id),
             createdAt: Date.now()
         });
-        console.log('createCategory', error, result);
 
         if (error) throw error;
 
@@ -35,10 +34,8 @@ async function createCategory(req, res) {
 
 async function getAll(req, res) {
     res.setHeader('Content-Type', 'application/json');
-
     try {
         const { error, result } = await model.getAllCategories();
-        console.log('getAll(category)', error, result);
         if (error) throw error;
         res.status(StatusCodes.OK).json($pass_count(result, result.length));
     } catch (e) {
@@ -54,7 +51,6 @@ async function getCategoryById(req, res) {
 
     try {
         const { error, result } = await model.getCategoryById(id);
-        console.log('getCategoryById', error, result);
         if (error) throw error;
         if (!result) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.OK).json($pass(result));
@@ -71,7 +67,6 @@ async function getAllByUser(req, res) {
 
     try {
         const { error, result } = await model.getAllCategoriesByUserId(id);
-        console.log('getAllByUser(category)', error, result);
         if (error) throw error;
         if (!result) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.OK).json($pass(result));
@@ -104,8 +99,7 @@ async function updateCategory(req, res) {
     const createdAt = newData.createdAt ?? oldData.createdAt;
 
     try {
-        const { error, result } = await model.updateCategory(id, { title, description, createdBy, createdAt });
-        console.log('updateCategory', error, result);
+        const { error } = await model.updateCategory(id, { title, description, createdBy, createdAt });
         if (error) throw error;
         res.status(StatusCodes.NoContent).json();
     } catch (e) {
@@ -121,7 +115,6 @@ async function deleteCategory(req, res) {
 
     try {
         const { error, result } = await model.deleteCategory(id);
-        console.log('deleteCategory', error, result);
         if (error) throw error;
         if (result.deletedCount === 0) return res.status(StatusCodes.NotFound).json($fail('resource not found'));
         res.status(StatusCodes.NoContent).json();

@@ -143,7 +143,7 @@
             let parsed = JSON.stringify(content, null, 4);
             if (parsed === '{}') parsed = ' OK';
             console.log(msg ?? ' ', parsed);
-            out.textContent += '\n' + (msg ?? '') + parsed;
+            out.textContent = out.value += '\n' + (msg ?? '') + parsed;
         };
 
         const url = type => `${baseUrl}/${type ?? ''}`;
