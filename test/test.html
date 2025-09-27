@@ -136,7 +136,7 @@
 
     <script>
         out.textContent = out.value = '';
-        const baseUrl = 'http://localhost:5341/';
+        const baseUrl = window.location.origin;
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
         const display = (content, msg) => {
