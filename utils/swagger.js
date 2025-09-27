@@ -9,7 +9,7 @@ async function run() {
     try {
         const IN_DEV = process.env.NODE_ENVIRONMENT === 'development';
 
-        const host = IN_DEV ? 'localhost:5341' : 'cmp-cse341-notes.onrender.com';
+        const host = IN_DEV ? 'localhost:5341' : 'cse341-notes.onrender.com';
         const schemes = IN_DEV ? ['http', 'https'] : ['https'];
 
         const $200 = type => ({ error: false, success: true, count: 2, data: type });
@@ -49,15 +49,16 @@ async function run() {
             host,
             basePath: '/',
             tags: [
+                { name: 'account', description: 'endpoints for account management and authentication' },
                 { name: 'users', description: 'endpoints for user management' },
                 { name: 'notes', description: 'endpoints for note management' },
-                { name: 'account', description: 'endpoints for account management and authentication' }
+                { name: 'categories', description: 'endpoints for category management' },
             ],
             schemes,
             securityDefinitions: {
                 OAuth2: {
                     type: 'oauth2',
-                    flow: 'implicit',
+                    flow: 'authorizationCode',
                     authorizationUrl: `${schemes[0]}://${host}/login`,
                     scopes: {
                         read: 'read information from the API',
@@ -86,6 +87,7 @@ async function run() {
 
         return true;
     } catch (e) {
+        console.error('Error loading Swagger: ', e);
         return false;
     }
 }

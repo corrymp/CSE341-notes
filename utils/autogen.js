@@ -24,19 +24,6 @@
     #swagger.responses[500] = {description: 'Internal server error'}
 */
 // #swagger.end
-
-// #swagger.start
-/*
-    #swagger.path = '/admin'
-    #swagger.method = 'get'
-    #swagger.description = 'Admin-only user list'
-    #swagger.tags = ['account']
-    #swagger.security = [{OAuth2: ['read']}]
-    #swagger.responses[200] = {description: 'Resource found and returned'}
-    #swagger.responses[401] = {description: 'Unauthorized - user must log in'}
-    #swagger.responses[500] = {description: 'Internal server error'}
-*/
-// #swagger.end
 //#endregion
 
 //#region users
