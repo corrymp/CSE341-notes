@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notes API Interface</title>
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII=" />
+    <style>
+        *,
+        ::before,
+        ::after {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            display: grid;
+            grid-template-rows: 1fr auto auto;
+            height: 96vh;
+        }
+
+        textarea {
+            white-space: pre-wrap;
+            resize: vertical;
+        }
+
+        div:first-of-type {
+            display: grid;
+            justify-content: space-between;
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        div:last-of-type {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            text-align: right;
+            margin: 0.66em;
+        }
+
+        h2 {
+            grid-column: 1/-1;
+            margin: 0;
+            text-align: left;
+        }
+
+        button {
+            padding: 0.33em 0.66em;
+            --post: #22b14c;
+            --get: #99f;
+            --put: #fa7;
+            --del: #f77;
+        }
+
+        label,
+        input {
+            padding: 0.166em 0.33em;
+            border-color: #0007;
+        }
+
+        div :where(label, input):nth-of-type(2n) {
+            background: #00000010;
+        }
+
+        .post {
+            background: var(--post);
+            color: #fff;
+        }
+
+        .get {
+            background: var(--get);
+            color: #fff;
+        }
+
+        .put {
+            background: var(--put);
+        }
+
+        .del {
+            background: var(--del);
+        }
+
+        .all {
+            background: conic-gradient(from 90deg at 0 0, var(--post) 0, var(--get) 6.25%, var(--put) 12.5%, var(--del) 18.75%);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="out"></textarea>
+
+    <div>
+        <button class="all" id="automate">Test all</button>
+        <button class="get" id="btnRoot">/</button>
+        <button class="get" id="btnProfile">/profile</button>
+        <button class="get" id="btnUserAllUsers">Get all users</button>
+        <button class="get" id="btnUserUserId">Get user by id</button>
+        <button class="post" id="btnCreateCategory">Create category</button>
+        <button class="get" id="btnCategories">Get all categories</button>
+        <button class="get" id="btnCategoryId">Get category by id</button>
+        <button class="get" id="btnCategoriesUserId">Get categories by user</button>
+        <button class="put" id="btnUpdateCategory">Update category</button>
+        <button class="del" id="btnDeleteCategory">Delete category</button>
+        <button class="post" id="btnCreateNote">Create note</button>
+        <button class="get" id="btnNotes">Get all notes</button>
+        <button class="get" id="btnNoteId">Get note by id</button>
+        <button class="get" id="btnNoteByUser">Get notes by user</button>
+        <button class="put" id="btnUpdateNote">Update note</button>
+        <button class="put" id="btnAddToCategory">Add to category</button>
+        <button class="del" id="btnDeleteNote">Delete note</button>
+    </div>
+
+    <div>
+        <h2>global</h2>
+        <label for="_id">id</label>
+        <input type="text" id="_id" pattern="[0-9a-f]{24}" />
+        <label for="title">Title</label>
+        <input type="text" id="title" />
+        <label for="createdBy">Created by</label>
+        <input type="text" id="createdBy" pattern="[0-9a-f]{24}" />
+        <label for="createdAt">Created at</label>
+        <input type="datetime" id="createdAt" />
+
+        <h2>Category</h2>
+        <label for="description">Description</label>
+        <input type="text" id="description" />
+        <label for="addToCategoryId">Category id (add note to category)</label>
+        <input type="text" id="addToCategoryId" pattern="[0-9a-f]{24}" />
+
+        <h2>Notes</h2>
+        <label for="content">Content</label>
+        <input type="text" id="content" />
+        <label for="edited">Time edited</label>
+        <input type="datetime" id="edited" />
+    </div>
+
+    <script>
+        out.textContent = out.value = '';
+        const baseUrl = 'http://localhost:5341/';
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        const display = (content, msg) => {
+            let parsed = JSON.stringify(content, null, 4);
+            if (parsed === '{}') parsed = ' OK';
+            console.log(msg ?? ' ', parsed);
+            out.textContent += '\n' + (msg ?? '') + parsed;
+        };
+
+        const url = type => `${baseUrl}${type ?? ''}`;
+        const idUrl = (type, subtype) => url(type) + (subtype ? `/${subtype}/` : '/') + _id.value;
+
+        const request = (method, ...params) => ({
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: method === 'DELETE' ? undefined : JSON.stringify(setParams(...params))
+        });
+
+        const setParams = (...params) => {
+            const body = {};
+            for (const param of params) body[param.id] = param.value || null;
+            return body;
+        };
+
+        const runRequest = async (...request) => {
+            const res = await fetch(...request);
+            try {
+                console.log(request[0]);
+                return await res.json();
+            } catch {
+                try {
+                    return await res.text();
+                } catch {
+                    return await res;
+                }
+            }
+        };
+
+        const noteEls = [title, content, createdBy, createdAt, edited];
+        const categoryEls = [title, description, createdBy, createdAt];
+        const RootReq = () => runRequest(url());
+        const ProfileReq = () => runRequest(url('profile'));
+        const AdminReq = () => runRequest(url('admin'));
+        const UserAllUsersReq = () => runRequest(url('users'));
+        const UserUserIdReq = () => runRequest(idUrl('users'));
+        const CreateCategoryReq = () => runRequest(url('categories'), request('POST', ...categoryEls));
+        const CategoriesReq = () => runRequest(url('categories'));
+        const CategoryIdReq = () => runRequest(idUrl('categories'));
+        const CategoriesUserIdReq = () => runRequest(idUrl('categories', 'by'));
+        const UpdateCategoryReq = () => runRequest(idUrl('categories'), request('PUT', ...categoryEls));
+        const DeleteCategoryReq = () => runRequest(idUrl('categories'), request('DELETE'));
+        const CreateNoteReq = () => runRequest(url('notes'), request('POST', ...noteEls));
+        const NoteIdReq = () => runRequest(idUrl('notes'));
+        const NoteByUserReq = () => runRequest(idUrl('notes', 'by'));
+        const NotesReq = () => runRequest(url('notes'));
+        const UpdateNoteReq = () => runRequest(idUrl('notes'), request('PUT', ...noteEls));
+        const AddToCategoryReq = () => runRequest(idUrl('notes') + '/' + addToCategoryId.value, request('PUT'));
+        const DeleteNoteReq = () => runRequest(idUrl('notes'), request('DELETE'));
+
+        btnRoot.addEventListener('click', async () => display(await RootReq()));
+        btnProfile.addEventListener('click', async () => display(await ProfileReq()));
+        btnUserAllUsers.addEventListener('click', async () => display(await UserAllUsersReq()));
+        btnUserUserId.addEventListener('click', async () => display(await UserUserIdReq()));
+        btnCreateCategory.addEventListener('click', async () => display(await CreateCategoryReq()));
+        btnCategories.addEventListener('click', async () => display(await CategoriesReq()));
+        btnCategoryId.addEventListener('click', async () => display(await CategoryIdReq()));
+        btnCategoriesUserId.addEventListener('click', async () => display(await CategoriesUserIdReq()));
+        btnUpdateCategory.addEventListener('click', async () => display(await UpdateCategoryReq()));
+        btnDeleteCategory.addEventListener('click', async () => display(await DeleteCategoryReq()));
+        btnCreateNote.addEventListener('click', async () => display(await CreateNoteReq()));
+        btnNoteId.addEventListener('click', async () => display(await NoteIdReq()));
+        btnNoteByUser.addEventListener('click', async () => display(await NoteByUserReq()));
+        btnNotes.addEventListener('click', async () => display(await NotesReq()));
+        btnUpdateNote.addEventListener('click', async () => display(await UpdateNoteReq()));
+        btnAddToCategory.addEventListener('click', async () => display(await AddToCategoryReq()));
+        btnDeleteNote.addEventListener('click', async () => display(await DeleteNoteReq()));
+
+        automate.addEventListener('click', async () => {
+            const RootRes = await RootReq();
+            const ProfileRes = await ProfileReq();
+            const AdminRes = await AdminReq();
+            title.value = 'testCategory';
+            description.value = 'Category';
+            const CreateCategoryRes = await CreateCategoryReq();
+            display(CreateCategoryRes, 'CreateCategoryRes');
+            title.value = 'testNote';
+            content.value = 'Note';
+            await sleep(100);
+            const CreateNoteRes = await CreateNoteReq();
+            display(CreateNoteRes, 'CreateNoteRes');
+            const UserAllUsersRes = await UserAllUsersReq();
+            display(UserAllUsersRes, 'UserAllUsersRes');
+            const CategoriesRes = await CategoriesReq();
+            display(CategoriesRes, 'CategoriesRes');
+            const NotesRes = await NotesReq();
+            display(NotesRes, 'NotesRes');
+            const userId = await UserAllUsersRes.data[0]._id;
+            _id.value = userId;
+            await sleep(100);
+            const UserUserIdRes = await UserUserIdReq();
+            display(UserUserIdRes, 'UserUserIdRes');
+            const categoryId = await CreateCategoryRes.data;
+            _id.value = categoryId;
+            await sleep(100);
+            const CategoryIdRes = await CategoryIdReq();
+            display(CategoryIdRes, 'CategoryIdRes');
+            const noteId = await CreateNoteRes.data;
+            _id.value = noteId;
+            await sleep(100);
+            const NoteIdRes = await NoteIdReq();
+            display(NoteIdRes, 'NoteIdRes');
+            _id.value = userId;
+            await sleep(100);
+            const CategoriesUserIdRes = await CategoriesUserIdReq();
+            display(CategoriesUserIdRes, 'CategoriesUserIdRes');
+            _id.value = userId;
+            await sleep(100);
+            const NoteByUserRes = await NoteByUserReq();
+            display(NoteByUserRes, 'NoteByUserRes');
+            _id.value = categoryId;
+            title.value = 'updateCategory';
+            description.value = 'categoryUpdated';
+            const UpdateCategoryRes = await UpdateCategoryReq();
+            display(UpdateCategoryRes, 'UpdateCategoryRes');
+            _id.value = noteId;
+            title.value = 'updateNote';
+            content.value = 'noteUpdated';
+            await sleep(100);
+            const UpdateNoteRes = await UpdateNoteReq();
+            display(UpdateNoteRes, 'UpdateNoteRes');
+            _id.value = noteId;
+            addToCategoryId.value = categoryId;
+            await sleep(100);
+            const AddToCategoryRes = await AddToCategoryReq();
+            display(AddToCategoryRes, 'AddToCategoryRes');
+            _id.value = noteId;
+            await sleep(100);
+            const DeleteNoteRes = await DeleteNoteReq();
+            display(DeleteNoteRes, 'DeleteNoteRes');
+            _id.value = categoryId;
+            await sleep(100);
+            const DeleteCategoryRes = await DeleteCategoryReq();
+            display(DeleteCategoryRes, 'DeleteCategoryRes');
+        });
+    </script>
+</body>
+
+</html>

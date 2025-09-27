@@ -1,0 +1,1209 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Notes341 REST API",
+        "description": "CSE 341 Week 03/04 Notes API"
+    },
+    "host": "localhost:5341",
+    "basePath": "/",
+    "tags": [
+        {
+            "name": "users",
+            "description": "endpoints for user management"
+        },
+        {
+            "name": "notes",
+            "description": "endpoints for note management"
+        },
+        {
+            "name": "account",
+            "description": "endpoints for account management and authentication"
+        }
+    ],
+    "schemes": ["http", "https"],
+    "securityDefinitions": {
+        "OAuth2": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "http://localhost:5341/login",
+            "scopes": {
+                "read": "read information from the API",
+                "write": "write information to the API"
+            }
+        }
+    },
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": ["account"],
+                "description": "Home page - confirms a users logged-in status",
+                "responses": {
+                    "200": {
+                        "description": "Resource found and returned"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/profile": {
+            "get": {
+                "tags": ["account"],
+                "description": "User profile information",
+                "responses": {
+                    "200": {
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/admin": {
+            "get": {
+                "tags": ["account"],
+                "description": "Admin-only user list",
+                "responses": {
+                    "200": {
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": ["users"],
+                "description": "Views all users. Can only be done with level 2 or higher.",
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_users"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "tags": ["users"],
+                "description": "Views a user. Can only be done by the user or with level 2 or higher.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_user"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            }
+        },
+        "/users/username/{username}": {
+            "get": {
+                "tags": ["users"],
+                "description": "Views a user. Can only be done by the user or with level 2 or higher.",
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_user"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/categories": {
+            "post": {
+                "tags": ["categories"],
+                "description": "Create a new category",
+                "parameters": [
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "example": "Short label of the category"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "example": "Description of the category"
+                                },
+                                "createdBy": {
+                                    "type": "string",
+                                    "example": "Mongo ObjectId"
+                                },
+                                "createdAt": {
+                                    "type": "string",
+                                    "example": "number:timestamp"
+                                }
+                            },
+                            "required": ["title", "description"]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "schema": {
+                            "$ref": "#/definitions/201"
+                        },
+                        "description": "Resource created and id returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            },
+            "get": {
+                "tags": ["categories"],
+                "description": "View all categories.",
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_categories"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/categories/{id}": {
+            "get": {
+                "tags": ["categories"],
+                "description": "View a category.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_category"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["categories"],
+                "description": "Update a category.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "example": "Short label of the category"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "example": "Description of the category"
+                                },
+                                "createdBy": {
+                                    "type": "string",
+                                    "example": "Mongo ObjectId"
+                                },
+                                "createdAt": {
+                                    "type": "string",
+                                    "example": "number:time"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Resource updated"
+                    },
+                    "304": {
+                        "description": "No changes from existing data"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["categories"],
+                "description": "Removes a category.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Resource deleted"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            }
+        },
+        "/categories/by/{id}": {
+            "get": {
+                "tags": ["categories"],
+                "description": "View all categories made by a user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_categories"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/notes": {
+            "post": {
+                "tags": ["notes"],
+                "description": "Create a new note",
+                "parameters": [
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "example": "Short label of the note"
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "example": "Main content of the note"
+                                },
+                                "createdBy": {
+                                    "type": "string",
+                                    "example": "Mongo ObjectId"
+                                },
+                                "createdAt": {
+                                    "type": "string",
+                                    "example": "number:time"
+                                },
+                                "edited": {
+                                    "type": "string",
+                                    "example": "number:time"
+                                }
+                            },
+                            "required": ["title", "content"]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "schema": {
+                            "$ref": "#/definitions/201"
+                        },
+                        "description": "Resource created and id returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            },
+            "get": {
+                "tags": ["notes"],
+                "description": "View all notes.",
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_notes"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        },
+        "/notes/{id}": {
+            "get": {
+                "tags": ["notes"],
+                "description": "View a note.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_note"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["notes"],
+                "description": "Update a note.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "obj",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "example": "Short label of the note"
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "example": "Main content of the note"
+                                },
+                                "createdBy": {
+                                    "type": "string",
+                                    "example": "Mongo ObjectId"
+                                },
+                                "createdAt": {
+                                    "type": "string",
+                                    "example": "number:time"
+                                },
+                                "edited": {
+                                    "type": "string",
+                                    "example": "number:time"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Resource updated"
+                    },
+                    "304": {
+                        "description": "No changes from existing data"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["notes"],
+                "description": "Removes a note.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Resource deleted"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            }
+        },
+        "/notes/{noteId}/{categoryId}": {
+            "put": {
+                "tags": ["notes"],
+                "description": "Put a note in a category.",
+                "parameters": [
+                    {
+                        "name": "noteId",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Resource updated"
+                    },
+                    "304": {
+                        "description": "No changes from existing data"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read", "write"]
+                    }
+                ]
+            }
+        },
+        "/notes/by/{id}": {
+            "get": {
+                "tags": ["notes"],
+                "description": "View all notes made by a user.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/200_notes"
+                        },
+                        "description": "Resource found and returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized - user must log in"
+                    },
+                    "404": {
+                        "schema": {
+                            "$ref": "#/definitions/404"
+                        },
+                        "description": "Resource not found"
+                    },
+                    "406": {
+                        "schema": {
+                            "$ref": "#/definitions/406"
+                        },
+                        "description": "Missing required parameters or bad data provided"
+                    },
+                    "500": {
+                        "schema": {
+                            "$ref": "#/definitions/500"
+                        },
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2": ["read"]
+                    }
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "201": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "string",
+                    "example": "Mongo:ObjectId"
+                }
+            }
+        },
+        "404": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "data": {
+                    "type": "string",
+                    "example": "resource not found"
+                }
+            }
+        },
+        "406": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "data": {
+                    "type": "string",
+                    "example": "missing required parameters or otherwise bad data provided"
+                }
+            }
+        },
+        "500": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "200_user": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "_id": {
+                            "type": "string",
+                            "example": "ObjectID"
+                        },
+                        "username": {
+                            "type": "string",
+                            "example": "username"
+                        },
+                        "createdAt": {
+                            "type": "number",
+                            "example": 1234567890
+                        }
+                    }
+                }
+            }
+        },
+        "200_users": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "example": "ObjectID"
+                            },
+                            "username": {
+                                "type": "string",
+                                "example": "username"
+                            },
+                            "createdAt": {
+                                "type": "number",
+                                "example": 1234567890
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "200_note": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "_id": {
+                            "type": "string",
+                            "example": "ObjectID"
+                        },
+                        "title": {
+                            "type": "string",
+                            "example": "Note Title"
+                        },
+                        "content": {
+                            "type": "string",
+                            "example": "Note Content"
+                        },
+                        "createdBy": {
+                            "type": "string",
+                            "example": "ObjectID"
+                        },
+                        "createdAt": {
+                            "type": "number",
+                            "example": 1234567890
+                        },
+                        "category": {
+                            "type": "string",
+                            "example": "ObjectId"
+                        },
+                        "edited": {
+                            "type": "number",
+                            "example": 1234567890
+                        }
+                    }
+                }
+            }
+        },
+        "200_notes": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "example": "ObjectID"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "Note Title"
+                            },
+                            "content": {
+                                "type": "string",
+                                "example": "Note Content"
+                            },
+                            "createdBy": {
+                                "type": "string",
+                                "example": "ObjectID"
+                            },
+                            "createdAt": {
+                                "type": "number",
+                                "example": 1234567890
+                            },
+                            "category": {
+                                "type": "string",
+                                "example": "ObjectId"
+                            },
+                            "edited": {
+                                "type": "number",
+                                "example": 1234567890
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "200_category": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "_id": {
+                            "type": "string",
+                            "example": "ObjectID"
+                        },
+                        "title": {
+                            "type": "string",
+                            "example": "Category title"
+                        },
+                        "description": {
+                            "type": "string",
+                            "example": "Category description"
+                        },
+                        "createdBy": {
+                            "type": "string",
+                            "example": "ObjectID"
+                        },
+                        "createdAt": {
+                            "type": "number",
+                            "example": 1234567890
+                        }
+                    }
+                }
+            }
+        },
+        "200_categories": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "count": {
+                    "type": "number",
+                    "example": 2
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "example": "ObjectID"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "Category title"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "Category description"
+                            },
+                            "createdBy": {
+                                "type": "string",
+                                "example": "ObjectID"
+                            },
+                            "createdAt": {
+                                "type": "number",
+                                "example": 1234567890
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
